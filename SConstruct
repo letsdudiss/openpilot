@@ -137,9 +137,8 @@ env = Environment(
     "-fPIC",
     "-O2",
     "-Wunused",
-    "-Werror",
     "-Wno-unknown-warning-option",
-    "-Wno-deprecated-register",
+    "-Wno-deprecated",
     "-Wno-register",
     "-Wno-inconsistent-missing-override",
     "-Wno-c99-designator",
@@ -232,7 +231,7 @@ def abspath(x):
 py_include = sysconfig.get_paths()['include']
 envCython = env.Clone()
 envCython["CPPPATH"] += [py_include, np.get_include()]
-envCython["CCFLAGS"] += ["-Wno-#warnings", "-Wno-deprecated-declarations"]
+envCython["CCFLAGS"] += ["-Wno-#warnings", "-Wno-error=deprecated-declarations","-Wno-deprecated-declarations"]
 
 envCython["LIBS"] = []
 if arch == "Darwin":
