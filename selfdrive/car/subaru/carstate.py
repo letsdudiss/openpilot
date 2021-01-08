@@ -87,6 +87,13 @@ class CarState(CarStateBase):
       #@LetsDuDiss 17 Dec 2020: Make a copy of Dashlights message so we can modify it in carcontroller.py and subarucan.py
       self.dashlights_msg = copy.copy(cp.vl["Dashlights"])
 
+      #@LetsDuDiss 19 Dec 2020: Make a copy of Throttle message to allow us to send a throttle tap to ES to get out of HOLD state
+      self.throttle_msg = copy.copy(cp.vl["Throttle"])
+      #Subaru STOP AND GO: ES States required to determine when to send throttle tap to get out of HOLD state
+      self.close_distance = cp_cam.vl["ES_Distance"]['Close_Distance']
+      self.car_follow = cp_cam.vl["ES_Distance"]['Car_Follow']
+      self.cruise_state = cp_cam.vl["ES_DashStatus"]['Cruise_State']
+
     return ret
 
   @staticmethod
@@ -100,7 +107,22 @@ class CarState(CarStateBase):
       ("Cruise_On", "CruiseControl", 0),
       ("Cruise_Activated", "CruiseControl", 0),
       ("Brake_Pedal", "Brake_Pedal", 0),
+      
+      #SUBARU STOP AND GO
+      #@LetsDuDiss 19 Dec 2020: Added signal Labels and default values for Throttle message, this will allow us
+      #to keep ES happy when we block Throttle message from ECU and send our own Throttle message to ES
+      #Checksum and Counter are required te be parsed here with default value to keep ES happy
+      ("Checksum", "Throttle", 0),
+      ("Counter", "Throttle", 0),
+      ("SPARE_SIGNAL_1", "Throttle", 0),
+      ("Engine_RPM", "Throttle", 0),
+      ("SPARE_SIGNAL_2", "Throttle", 0),
       ("Throttle_Pedal", "Throttle", 0),
+      ("Throttle_Cruise", "Throttle", 0),
+      ("Throttle_Combo", "Throttle", 0),
+      ("Signal1", "Throttle", 0),
+      ("Off_Accel", "Throttle", 0),
+
       ("LEFT_BLINKER", "Dashlights", 0),
       ("RIGHT_BLINKER", "Dashlights", 0),
       ("SEATBELT_FL", "Dashlights", 0),
@@ -251,6 +273,10 @@ class CarState(CarStateBase):
         ("LKAS_Right_Line_Green", "ES_LKAS_State", 0),
         ("LKAS_Alert", "ES_LKAS_State", 0),
         ("Signal3", "ES_LKAS_State", 0),
+
+        #SUBARU STOP AND GO
+        #@LetsDuDiss 19 dec 2020: Get CruiseState, to determine if we are in ACC HOLD state
+        ("Cruise_State", "ES_DashStatus", 0),
       ]
 
       checks = [
