@@ -27,6 +27,14 @@ def create_es_distance(packer, es_distance_msg, pcm_cancel_cmd):
 
   return packer.make_can_msg("ES_Distance", 0, values)
 
+def create_dashlights(packer, dashlights_msg, auto_ss_btn):
+
+  values = copy.copy(dashlights_msg)
+  if auto_ss_btn:
+    values["AUTO_SS_BTN"] = 1
+
+  return packer.make_can_msg("Dashlights", 0, values)    
+
 def create_es_lkas(packer, es_lkas_msg, visual_alert, left_line, right_line):
 
   values = copy.copy(es_lkas_msg)

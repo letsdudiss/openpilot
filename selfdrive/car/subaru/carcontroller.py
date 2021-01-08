@@ -14,6 +14,10 @@ class CarController():
     self.cruise_button_prev = 0
     self.steer_rate_limited = False
 
+    #SUBARU ENGINE AUTO START-STOP flags and vars
+    self.dashlights_cnt = -1
+    self.has_set_auto_ss = False
+
     self.packer = CANPacker(DBC[CP.carFingerprint]['pt'])
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, left_line, right_line):
@@ -49,6 +53,21 @@ class CarController():
         can_sends.append(subarucan.create_steering_control(self.packer, apply_steer, frame, CarControllerParams.STEER_STEP))
 
       self.apply_steer_last = apply_steer
+
+    #--------------------Engine Auto Start-Stop----------------------
+    if CarControllerParams.FEATURE_NO_ENGINE_STOP_START:
+      #GLOBAL only
+      if CS.CP.carFingerprint not in PREGLOBAL_CARS:
+        #If Auto Stop Start has gone to state 3 at least once, it means either we have successfully turn off autoStopStart
+        #or driver manually turn it off before we got to it
+        if CS.autoStopStartDisabled:
+          self.has_set_auto_ss = True
+
+        #Send message to press AutoSS button, only do it once, when car starts up, after that, driver can turn it back on if they want
+        if self.dashlights_cnt != CS.dashlights_msg["Counter"] and not self.has_set_auto_ss:
+          can_sends.append(subarucan.create_dashlights(self.packer, CS.dashlights_msg, True))
+          self.dashlights_cnt = CS.dashlights_msg["Counter"]
+    #----------------------------------------------------------------
 
 
     # *** alerts and pcm cancel ***

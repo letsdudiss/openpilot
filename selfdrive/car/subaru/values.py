@@ -16,6 +16,9 @@ class CarControllerParams:
   STEER_DRIVER_MULTIPLIER = 10  # weight driver torque heavily
   STEER_DRIVER_FACTOR = 1       # from dbc
 
+  #SUBARU ENGINE AUTO START-STOP
+  FEATURE_NO_ENGINE_STOP_START = True
+
 class CAR:
   ASCENT = "SUBARU ASCENT LIMITED 2019"
   IMPREZA = "SUBARU IMPREZA LIMITED 2019"
