@@ -19,6 +19,14 @@ class CarControllerParams:
   #SUBARU ENGINE AUTO START-STOP
   FEATURE_NO_ENGINE_STOP_START = True
 
+  #SUBARU STOP AND GO
+  SNG_DISTANCE_LIMIT = 180      # distance trigger value limit for stop and go (0-255)
+  SNG_DISTANCE_DEADBAND = 10     # deadband for SNG lead car refence distance to cater for Close_Distance sensor noises
+  THROTTLE_TAP_LIMIT = 5        # send a maximum of 5 throttle tap messages (trial and error)
+  THROTTLE_TAP_LEVEL = 5        # send a throttle message with value of 5 (trial and error)
+  ES_CLOSE_DISTANCE_SETTLE_TIME = 250000000  #(250ms) time taken (in nanoseconds) for ES's Close_Distance signal to settle (taking care of noise after stopping)
+
+
 class CAR:
   ASCENT = "SUBARU ASCENT LIMITED 2019"
   IMPREZA = "SUBARU IMPREZA LIMITED 2019"
