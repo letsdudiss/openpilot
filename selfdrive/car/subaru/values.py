@@ -5,6 +5,9 @@ from cereal import car
 Ecu = car.CarParams.Ecu
 
 class CarControllerParams:
+  #@letdudiss 18 Nov 2020 Reduced max steer for new Subarus (Impreza 2021) with lower torque limit
+  #Avoids LKAS and ES fault when OP apply a steer value exceed what ES allows
+  STEER_MAX_REDUCED = 1439      # max_steer 4095, reduced for 1439 for Subaru Impreza 2021
   STEER_MAX = 2047              # max_steer 4095
   STEER_STEP = 2                # how often we update the steer cmd
   STEER_DELTA_UP = 50           # torque increase per refresh, 0.8s to max
