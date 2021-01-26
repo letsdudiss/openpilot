@@ -23,7 +23,16 @@ TogglesPanel::TogglesPanel(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *toggles_list = new QVBoxLayout();
 
   QList<ParamControl*> toggles;
-
+  toggles.append(new ParamControl("EnableSygicOverlay",
+                                  "Enable Sygic",
+                                  "Sygic GPS app overlay instead of dashcam view",
+                                  "../assets/offroad/icon_map_speed.png", 
+                                  this));
+  toggles.append(new ParamControl("EnableWazeOverlay",
+                                  "Enable Waze",
+                                  "Waze GPS app overlay instead of dashcam view",
+                                  "../assets/offroad/icon_map_speed.png", 
+                                  this));
   toggles.append(new ParamControl("OpenpilotEnabledToggle",
                                   "Enable openpilot",
                                   "Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.",
