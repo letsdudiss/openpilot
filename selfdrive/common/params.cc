@@ -183,6 +183,8 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LastUpdateException", PERSISTENT},
     {"LastUpdateTime", PERSISTENT},
     {"LiveParameters", PERSISTENT},
+    {"EnableSygicOverlay", PERSISTENT},
+    {"EnableWazeOverlay", PERSISTENT},
     {"MapboxToken", PERSISTENT},
     {"NavDestination", PERSISTENT}, // TODO: CLEAR_ON_MANAGER_START
     {"OpenpilotEnabledToggle", PERSISTENT},
