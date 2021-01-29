@@ -94,6 +94,9 @@ class CarState(CarStateBase):
       self.car_follow = cp_cam.vl["ES_Distance"]['Car_Follow']
       self.cruise_state = cp_cam.vl["ES_DashStatus"]['Cruise_State']
       self.wipers_activated = cp.vl["BodyInfo"]['WIPERS']
+      #@LetsDuDiss 26 Jan 2021: Added flags for SMART SNG
+      self.cruise_throttle = cp_cam.vl["ES_Distance"]['Cruise_Throttle']
+      self.cruise_brake_active = cp_cam.vl["ES_Distance"]['Cruise_Brake_Active']
 
     return ret
 
@@ -241,6 +244,7 @@ class CarState(CarStateBase):
         ("Cruise_Set_Speed", "ES_DashStatus", 0),
         ("Conventional_Cruise", "ES_DashStatus", 0),
 
+        ("Checksum", "ES_Distance", 0),
         ("Counter", "ES_Distance", 0),
         ("Signal1", "ES_Distance", 0),
         ("Cruise_Fault", "ES_Distance", 0),
