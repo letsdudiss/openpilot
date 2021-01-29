@@ -25,7 +25,9 @@ class CarControllerParams:
   THROTTLE_TAP_LIMIT = 5        # send a maximum of 5 throttle tap messages (trial and error)
   THROTTLE_TAP_LEVEL = 5        # send a throttle message with value of 5 (trial and error)
   ES_CLOSE_DISTANCE_SETTLE_TIME = 250000000  #(250ms) time taken (in nanoseconds) for ES's Close_Distance signal to settle (taking care of noise after stopping)
-
+  SMART_SNG_INITIAL_THROTTLE_MAX = 2600    #maximum limit for cruise throttle value to send to car during initlal sng
+  SMART_SNG_INITIAL_DURATION = 10000000000 # maximum time (ns) cruise throttle signal is sent for
+  SMART_SNG_THROTTLE_DROP_DEADBAND = 50 #How sharp cruise throttle should drop in order for SMART SNG sequence to pause
 
 class CAR:
   ASCENT = "SUBARU ASCENT LIMITED 2019"
