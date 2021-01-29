@@ -178,6 +178,8 @@ class CarController():
         can_sends.append(subarucan.create_es_distance(self.packer, CS.es_distance_msg, pcm_cancel_cmd))
         self.es_distance_cnt = CS.es_distance_msg["Counter"]
 
+      #@LetsDuDiss 25 Jan 2021: Nullify all "Keep Hands On Wheels" alert, audio alert is enough
+      visual_alert = False
       if self.es_lkas_cnt != CS.es_lkas_msg["Counter"]:
         can_sends.append(subarucan.create_es_lkas(self.packer, CS.es_lkas_msg, visual_alert, left_line, right_line))
         self.es_lkas_cnt = CS.es_lkas_msg["Counter"]
