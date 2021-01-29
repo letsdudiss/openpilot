@@ -27,6 +27,10 @@ class CarController():
     self.sng_resume_acc = False
     self.sng_has_recorded_distance = False
     self.sng_distance_threshold = CarControllerParams.SNG_DISTANCE_LIMIT
+    #SMART SNG flags and vars
+    self.cruise_throttle_transition_time = -1
+    self.sng_send_cruise_throttle = False
+    self.prev_cruise_throttle = -1
 
     self.packer = CANPacker(DBC[CP.carFingerprint]['pt'])
 
@@ -78,6 +82,43 @@ class CarController():
           can_sends.append(subarucan.create_dashlights(self.packer, CS.dashlights_msg, True))
           self.dashlights_cnt = CS.dashlights_msg["Counter"]
     #----------------------------------------------------------------
+
+    #TODO: For now, only send initial THROTTLE signal coming out HOLD state, we should be smart enough to detect when
+    #car almost come to a stop but has not entered HOLD state and LEAD CAR took off
+    #--------------------------Smart SNG---------------------------
+    #-----------Send pre-emptive Cruise Throttle signal------------
+    #Only send throttle on falling edge of HOLD state (i.e. right after throttle tap or resume is sent)
+    if (enabled                                                     #Only if Cruise enabled
+        #and not CS.LKAS_Active                                      #Bind this function to LKAS, turning ON lkas in car will disable this feature
+        and not CS.cruise_brake_active                              #Only send cruise throttle if Brake is OFF
+        and CS.cruise_state != 3 and self.prev_cruise_state == 3    #Falling EDGE of ES_CruiseState
+        and CS.cruise_throttle < CarControllerParams.SMART_SNG_INITIAL_THROTTLE_MAX   #Only send cruise throttle if ES's signal is less than 2000
+        ):
+      #Trigger Cruise Throttle
+      self.sng_send_cruise_throttle = True
+      #Record timestamp
+      self.cruise_throttle_transition_time = time.time_ns()
+    
+    #SMART SNG sequence lasts for <SMART_SNG_INITIAL_DURATION> seconds or cancel the sequence if car comes to HOLD state again
+    if (time.time_ns() > self.cruise_throttle_transition_time + CarControllerParams.SMART_SNG_INITIAL_DURATION  #Only send throttle for 3 seconds, reset flag after 3 seconds
+        or CS.cruise_state == 3
+        ):
+      #Completely stop SMART SNG sequence  
+      self.sng_send_cruise_throttle = False
+
+    #Send cruise throttle command
+    cruise_throttle = -1    #Normally just forward the CruiseThrottle from ES
+    if (self.sng_send_cruise_throttle                                                #Only send throttle if SMART SNG sequence is still triggered
+        and CS.cruise_throttle < CarControllerParams.SMART_SNG_INITIAL_THROTTLE_MAX  #Only send throttle if ES's throttle signal is less than MAX SMART SNG throttle
+        and not CS.cruise_brake_active                                               #SAFETY: Only send throttle if ES is NOT calling for brake   
+        and not CS.cruise_throttle + CarControllerParams.SMART_SNG_THROTTLE_DROP_DEADBAND < self.prev_cruise_throttle  #SAFETY: Only send throttle sequence if ES's Throttle Signal is NOT on the decline which indicates that we should stop
+        ):
+      #Scale cruise throttle based on CloseDistance
+      cruise_throttle = 1800 + ((CS.close_distance/255)*(CarControllerParams.SMART_SNG_INITIAL_THROTTLE_MAX - 1800)) #2-point scale between 0-255 and 0-800 (800 is from Max SNG throttle (2600) - 1800)
+      #Cruise throttle should not exceed <SMART_SNG_INITIAL_THROTTLE_MAX>
+      if cruise_throttle > CarControllerParams.SMART_SNG_INITIAL_THROTTLE_MAX:
+        cruise_throttle = CarControllerParams.SMART_SNG_INITIAL_THROTTLE_MAX
+    #----------------------------------------------------------------  
 
     #----------------------Subaru STOP AND GO------------------------
     if CS.CP.carFingerprint in PREGLOBAL_CARS:
@@ -141,14 +182,9 @@ class CarController():
         can_sends.append(subarucan.create_throttle(self.packer, CS.throttle_msg, throttle_cmd))
         self.throttle_cnt = CS.throttle_msg["Counter"]
 
-      #TODO: Send cruise throttle to get car up to speed. There is a 2-3 seconds delay after
-      # throttle tap is sent and car start moving. EDIT: This is standard with Toyota OP's SnG
-      #pseudo: !!!WARNING!!! Dangerous, proceed with CARE
-      #if sng_resume_acc is True && has been 1 second since sng_resume_acc turns to True && current ES_Throttle < 2000
-      #    send ES_Throttle = 2000
-
-      #Update prev values
-      self.prev_cruise_state = CS.cruise_state
+    #Update prev values
+    self.prev_cruise_state = CS.cruise_state
+    self.prev_cruise_throttle = CS.cruise_throttle
     #------------------------------------------------------------------
 
     # *** alerts and pcm cancel ***
@@ -175,7 +211,7 @@ class CarController():
 
     else:
       if self.es_distance_cnt != CS.es_distance_msg["Counter"]:
-        can_sends.append(subarucan.create_es_distance(self.packer, CS.es_distance_msg, pcm_cancel_cmd))
+        can_sends.append(subarucan.create_es_distance(self.packer, CS.es_distance_msg, pcm_cancel_cmd, cruise_throttle))
         self.es_distance_cnt = CS.es_distance_msg["Counter"]
 
       #@LetsDuDiss 25 Jan 2021: Nullify all "Keep Hands On Wheels" alert, audio alert is enough
