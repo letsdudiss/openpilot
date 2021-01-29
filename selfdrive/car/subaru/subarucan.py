@@ -19,11 +19,13 @@ def create_steering_control(packer, apply_steer, frame, steer_step):
 def create_steering_status(packer, apply_steer, frame, steer_step):
   return packer.make_can_msg("ES_LKAS_State", 0, {})
 
-def create_es_distance(packer, es_distance_msg, pcm_cancel_cmd):
+def create_es_distance(packer, es_distance_msg, pcm_cancel_cmd, cruise_throttle):
 
   values = copy.copy(es_distance_msg)
   if pcm_cancel_cmd:
     values["Cruise_Cancel"] = 1
+  if cruise_throttle != -1:
+    values["Cruise_Throttle"] = cruise_throttle
 
   return packer.make_can_msg("ES_Distance", 0, values)
 
